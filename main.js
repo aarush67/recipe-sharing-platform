@@ -16,7 +16,7 @@ const db = firebase.firestore();
 // Google provider
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 
-// Register
+// Register form submission
 document.getElementById("register-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = document.getElementById("register-email").value;
@@ -25,13 +25,13 @@ document.getElementById("register-form")?.addEventListener("submit", async (e) =
     try {
         await auth.createUserWithEmailAndPassword(email, password);
         alert("Registration Successful!");
-        window.location.href = "login.html";
+        window.location.href = "login.html"; // Redirect to login page after successful registration
     } catch (error) {
-        alert(error.message);
+        alert(error.message); // Show any errors
     }
 });
 
-// Login
+// Login form submission
 document.getElementById("login-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const email = document.getElementById("email").value;
@@ -40,24 +40,24 @@ document.getElementById("login-form")?.addEventListener("submit", async (e) => {
     try {
         await auth.signInWithEmailAndPassword(email, password);
         alert("Login Successful!");
-        window.location.href = "view-recipes.html";
+        window.location.href = "view-recipes.html"; // Redirect to view recipes after successful login
     } catch (error) {
-        alert(error.message);
+        alert(error.message); // Show any errors
     }
 });
 
-// Google Sign-In
+// Google Sign-In button click event
 document.getElementById("google-signin")?.addEventListener("click", async () => {
     try {
         const result = await auth.signInWithPopup(googleProvider);
         alert("Google Sign-In Successful!");
-        window.location.href = "view-recipes.html";
+        window.location.href = "view-recipes.html"; // Redirect after successful Google sign-in
     } catch (error) {
-        alert(error.message);
+        alert(error.message); // Show any errors
     }
 });
 
-// Google Sign-Up
+// Google Sign-Up button click event
 document.getElementById("google-register")?.addEventListener("click", async () => {
     try {
         const result = await auth.signInWithPopup(googleProvider);
@@ -71,13 +71,13 @@ document.getElementById("google-register")?.addEventListener("click", async () =
         });
 
         alert("Google Registration Successful!");
-        window.location.href = "view-recipes.html";
+        window.location.href = "view-recipes.html"; // Redirect after successful Google sign-up
     } catch (error) {
-        alert(error.message);
+        alert(error.message); // Show any errors
     }
 });
 
-// Add Recipe
+// Add Recipe form submission
 document.getElementById("recipe-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const title = document.getElementById("recipe-title").value;
@@ -90,13 +90,13 @@ document.getElementById("recipe-form")?.addEventListener("submit", async (e) => 
             user: auth.currentUser.email
         });
         alert("Recipe added successfully!");
-        window.location.href = "view-recipes.html";
+        window.location.href = "view-recipes.html"; // Redirect to view recipes after adding a recipe
     } catch (error) {
-        alert(error.message);
+        alert(error.message); // Show any errors
     }
 });
 
-// View Recipes
+// Load Recipes on page load
 window.onload = async () => {
     const recipeList = document.getElementById("recipe-list");
     const querySnapshot = await db.collection("recipes").get();
@@ -104,6 +104,6 @@ window.onload = async () => {
     querySnapshot.forEach((doc) => {
         const li = document.createElement("li");
         li.textContent = `${doc.data().title}: ${doc.data().description}`;
-        recipeList.appendChild(li);
+        recipeList.appendChild(li); // Append each recipe to the list
     });
 };
