@@ -12,58 +12,47 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 var auth = firebase.auth();
 
-// Handle Google Sign-In
-document.getElementById('googleSignInBtn').addEventListener('click', function() {
+// Function to handle email sign-up
+function emailSignUp() {
+    var email = document.getElementById('emailInput').value;
+    var password = document.getElementById('passwordInput').value;
+
+    auth.createUserWithEmailAndPassword(email, password)
+        .then(function(userCredential) {
+            console.log("User signed up:", userCredential.user);
+            alert("Sign-Up successful! Redirecting to login...");
+            window.location.href = 'login.html'; // Redirect to login page
+        })
+        .catch(function(error) {
+            console.error("Error during sign-up:", error);
+            alert("Sign-Up failed! " + error.message);
+        });
+}
+
+// Function to handle Google sign-up
+function googleSignUp() {
     var provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider).then(function(result) {
-        console.log("User signed in:", result.user);
-        // Redirect or load recipes
-    }).catch(function(error) {
-        console.error("Error during Google Sign-In:", error);
-    });
-});
+    auth.signInWithPopup(provider)
+        .then(function(result) {
+            console.log("User signed up with Google:", result.user);
+            alert("Google Sign-Up successful! Redirecting to homepage...");
+            window.location.href = 'homepage.html'; // Redirect to homepage or recipes page
+        })
+        .catch(function(error) {
+            console.error("Error during Google sign-up:", error);
+            alert("Google Sign-Up failed! " + error.message);
+        });
+}
 
-// Handle Email Sign-Up
-document.getElementById('emailSignUpBtn').addEventListener('click', function() {
-    var email = document.getElementById('emailInput').value;
-    var password = document.getElementById('passwordInput').value;
-
-    auth.createUserWithEmailAndPassword(email, password).then(function(userCredential) {
-        console.log("User signed up:", userCredential.user);
-        // Redirect or load recipes
-    }).catch(function(error) {
-        console.error("Error during sign-up:", error);
-    });
-});
-
-// Handle Email Sign-In
-document.getElementById('emailSignInBtn').addEventListener('click', function() {
-    var email = document.getElementById('emailInput').value;
-    var password = document.getElementById('passwordInput').value;
-
-    auth.signInWithEmailAndPassword(email, password).then(function(userCredential) {
-        console.log("User signed in:", userCredential.user);
-        // Redirect or load recipes
-    }).catch(function(error) {
-        console.error("Error during sign-in:", error);
-    });
-});
-
-// Handle Sign Out
-document.getElementById('signOutBtn').addEventListener('click', function() {
-    auth.signOut().then(function() {
-        console.log("User signed out");
-        // Redirect or clear user data
-    });
-});
-
-// Track Auth State
-auth.onAuthStateChanged(function(user) {
-    if (user) {
-        console.log("User is signed in:", user);
-        // Load recipes or redirect
-    } else {
-        console.log("No user is signed in.");
-        // Show sign-in form
+// Function to bind event listeners based on the current page
+function initializePage() {
+    if (document.getElementById('emailSignUpBtn')) {
+        document.getElementById('emailSignUpBtn').addEventListener('click', emailSignUp);
     }
-});
+    if (document.getElementById('googleSignUpBtn')) {
+        document.getElementById('googleSignUpBtn').addEventListener('click', googleSignUp);
+    }
+}
+
+// Call initializePage when the window loads
+window.onload = initializePage;
