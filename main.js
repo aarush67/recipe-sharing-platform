@@ -1,11 +1,11 @@
 // Your web app's Firebase configuration
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyDm2JmyBAk-DCrzqhWLgcJDILIpCa2ErHo",
+  authDomain: "recipe-sharing-platform-62d85.firebaseapp.com",
+  projectId: "recipe-sharing-platform-62d85",
+  storageBucket: "recipe-sharing-platform-62d85.appspot.com",
+  messagingSenderId: "695326480119",
+  appId: "1:695326480119:web:85bda9b47e93f9d374e5f2",
 };
 
 // Initialize Firebase
@@ -30,6 +30,30 @@ document.getElementById("register-form")?.addEventListener("submit", async (e) =
         alert(error.message);
     }
 });
+
+// Google Sign-Up
+document.getElementById("google-register")?.addEventListener("click", async () => {
+    try {
+        const result = await auth.signInWithPopup(googleProvider);
+        // This gives you a Google Access Token. You can use it to access Google APIs.
+        const token = result.credential.accessToken;
+        // The signed-in user info.
+        const user = result.user;
+
+        // Save user data to Firestore
+        await db.collection("users").doc(user.email).set({
+            displayName: user.displayName,
+            email: user.email,
+            photoURL: user.photoURL
+        });
+
+        alert("Google Registration Successful!");
+        window.location.href = "view-recipes.html";
+    } catch (error) {
+        alert(error.message);
+    }
+});
+
 
 // Login
 document.getElementById("login-form")?.addEventListener("submit", async (e) => {
