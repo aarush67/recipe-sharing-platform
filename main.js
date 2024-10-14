@@ -9,101 +9,121 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+firebase.initializeApp(firebaseConfig);
+var db = firebase.firestore();
+var auth = firebase.auth();
 
-// Google provider
-const googleProvider = new firebase.auth.GoogleAuthProvider();
-
-// Register form submission
-document.getElementById("register-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const email = document.getElementById("register-email").value;
-    const password = document.getElementById("register-password").value;
-
-    try {
-        await auth.createUserWithEmailAndPassword(email, password);
-        alert("Registration Successful!");
-        window.location.href = "login.html"; // Redirect to login page after successful registration
-    } catch (error) {
-        alert(error.message); // Show any errors
-    }
-});
-
-// Login form submission
-document.getElementById("login-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-
-    try {
-        await auth.signInWithEmailAndPassword(email, password);
-        alert("Login Successful!");
-        window.location.href = "view-recipes.html"; // Redirect to view recipes after successful login
-    } catch (error) {
-        alert(error.message); // Show any errors
-    }
-});
-
-// Google Sign-In button click event
-document.getElementById("google-signin")?.addEventListener("click", async () => {
-    try {
-        const result = await auth.signInWithPopup(googleProvider);
-        alert("Google Sign-In Successful!");
-        window.location.href = "view-recipes.html"; // Redirect after successful Google sign-in
-    } catch (error) {
-        alert(error.message); // Show any errors
-    }
-});
-
-// Google Sign-Up button click event
-document.getElementById("google-register")?.addEventListener("click", async () => {
-    try {
-        const result = await auth.signInWithPopup(googleProvider);
-        const user = result.user;
-
-        // Save user data to Firestore
-        await db.collection("users").doc(user.email).set({
-            displayName: user.displayName,
-            email: user.email,
-            photoURL: user.photoURL
-        });
-
-        alert("Google Registration Successful!");
-        window.location.href = "view-recipes.html"; // Redirect after successful Google sign-up
-    } catch (error) {
-        alert(error.message); // Show any errors
-    }
-});
-
-// Add Recipe form submission
-document.getElementById("recipe-form")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const title = document.getElementById("recipe-title").value;
-    const description = document.getElementById("recipe-description").value;
-
-    try {
-        await db.collection("recipes").add({
-            title,
-            description,
-            user: auth.currentUser.email
-        });
-        alert("Recipe added successfully!");
-        window.location.href = "view-recipes.html"; // Redirect to view recipes after adding a recipe
-    } catch (error) {
-        alert(error.message); // Show any errors
-    }
-});
-
-// Load Recipes on page load
-window.onload = async () => {
-    const recipeList = document.getElementById("recipe-list");
-    const querySnapshot = await db.collection("recipes").get();
-    
-    querySnapshot.forEach((doc) => {
-        const li = document.createElement("li");
-        li.textContent = `${doc.data().title}: ${doc.data().description}`;
-        recipeList.appendChild(li); // Append each recipe to the list
+// Handle Google Sign-In
+document.getElementById('googleSignInBtn').addEventListener('click', function() {
+    var provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).then(function(result) {
+        console.log("User signed in:", result.user);
+        loadRecipes(); // Load recipes after sign-in
+    }).catch(function(error) {
+        console.error("Error during Google Sign-In:", error);
     });
-};
+});
+
+// Handle Email Sign-Up
+document.getElementById('emailSignUpBtn').addEventListener('click', function() {
+    var email = prompt("Enter your email:");
+    var password = prompt("Enter your password:");
+
+    auth.createUserWithEmailAndPassword(email, password).then(function(userCredential) {
+        console.log("User signed up:", userCredential.user);
+        loadRecipes(); // Load recipes after sign-up
+    }).catch(function(error) {
+        console.error("Error during sign-up:", error);
+    });
+});
+
+// Handle Email Sign-In
+document.getElementById('emailSignInBtn').addEventListener('click', function() {
+    var email = prompt("Enter your email:");
+    var password = prompt("Enter your password:");
+
+    auth.signInWithEmailAndPassword(email, password).then(function(userCredential) {
+        console.log("User signed in:", userCredential.user);
+        loadRecipes(); // Load recipes after sign-in
+    }).catch(function(error) {
+        console.error("Error during sign-in:", error);
+    });
+});
+
+// Handle Sign Out
+document.getElementById('signOutBtn').addEventListener('click', function() {
+    auth.signOut().then(function() {
+        console.log("User signed out");
+        document.getElementById('recipeList').innerHTML = ''; // Clear recipe list
+    });
+});
+
+// Load recipes from Firestore
+function loadRecipes() {
+    db.collection('recipes').get().then(function(querySnapshot) {
+        document.getElementById('recipeList').innerHTML = ''; // Clear existing recipes
+        querySnapshot.forEach(function(doc) {
+            const recipe = doc.data();
+            const recipeItem = `<div class="recipe-item" data-id="${doc.id}">
+                                  <h3>${recipe.title}</h3>
+                                  <button class="viewRecipeBtn">View Recipe</button>
+                              </div>`;
+            document.getElementById('recipeList').insertAdjacentHTML('beforeend', recipeItem);
+        });
+
+        // Add event listeners to view buttons
+        document.querySelectorAll('.viewRecipeBtn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                const recipeId = this.parentElement.getAttribute('data-id');
+                window.location.href = `viewRecipe.html?id=${recipeId}`; // Redirect to viewRecipe page
+            });
+        });
+    }).catch(function(error) {
+        console.error("Error loading recipes:", error);
+    });
+}
+
+// Load recipes on page load
+document.addEventListener('DOMContentLoaded', function() {
+    auth.onAuthStateChanged(function(user) {
+        if (user) {
+            loadRecipes(); // Load recipes if user is signed in
+        }
+    });
+});
+
+// Load recipe data when navigating to the viewRecipe page
+function loadRecipe(recipeId) {
+    db.collection('recipes').doc(recipeId).get().then(function(doc) {
+        if (doc.exists) {
+            const recipeData = doc.data();
+            displayRecipe(recipeData); // Display recipe details
+        } else {
+            document.getElementById('recipeDetails').innerHTML = '<p>Recipe not found!</p>';
+        }
+    }).catch(function(error) {
+        console.error("Error fetching recipe data:", error);
+    });
+}
+
+// Display recipe details
+function displayRecipe(recipeData) {
+    const recipeDetails = document.getElementById('recipeDetails');
+    recipeDetails.innerHTML = `
+        <h2>${recipeData.title}</h2>
+        <p><strong>Ingredients:</strong></p>
+        <ul>${recipeData.ingredients.map(ingredient => `<li>${ingredient}</li>`).join('')}</ul>
+        <p><strong>Instructions:</strong></p>
+        <p>${recipeData.instructions}</p>
+    `;
+}
+
+// Attach event listener to view recipe button in viewRecipe.html
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const recipeId = urlParams.get('id');
+
+    if (recipeId) {
+        loadRecipe(recipeId); // Load recipe if there is an ID in the URL
+    }
+});
