@@ -1,5 +1,5 @@
 // Your web app's Firebase configuration
-const firebaseConfig = {
+var firebaseConfig = {
   apiKey: "AIzaSyDm2JmyBAk-DCrzqhWLgcJDILIpCa2ErHo",
   authDomain: "recipe-sharing-platform-62d85.firebaseapp.com",
   projectId: "recipe-sharing-platform-62d85",
