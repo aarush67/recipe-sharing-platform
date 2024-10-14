@@ -31,30 +31,6 @@ document.getElementById("register-form")?.addEventListener("submit", async (e) =
     }
 });
 
-// Google Sign-Up
-document.getElementById("google-register")?.addEventListener("click", async () => {
-    try {
-        const result = await auth.signInWithPopup(googleProvider);
-        // This gives you a Google Access Token. You can use it to access Google APIs.
-        const token = result.credential.accessToken;
-        // The signed-in user info.
-        const user = result.user;
-
-        // Save user data to Firestore
-        await db.collection("users").doc(user.email).set({
-            displayName: user.displayName,
-            email: user.email,
-            photoURL: user.photoURL
-        });
-
-        alert("Google Registration Successful!");
-        window.location.href = "view-recipes.html";
-    } catch (error) {
-        alert(error.message);
-    }
-});
-
-
 // Login
 document.getElementById("login-form")?.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -73,8 +49,28 @@ document.getElementById("login-form")?.addEventListener("submit", async (e) => {
 // Google Sign-In
 document.getElementById("google-signin")?.addEventListener("click", async () => {
     try {
-        await auth.signInWithPopup(googleProvider);
+        const result = await auth.signInWithPopup(googleProvider);
         alert("Google Sign-In Successful!");
+        window.location.href = "view-recipes.html";
+    } catch (error) {
+        alert(error.message);
+    }
+});
+
+// Google Sign-Up
+document.getElementById("google-register")?.addEventListener("click", async () => {
+    try {
+        const result = await auth.signInWithPopup(googleProvider);
+        const user = result.user;
+
+        // Save user data to Firestore
+        await db.collection("users").doc(user.email).set({
+            displayName: user.displayName,
+            email: user.email,
+            photoURL: user.photoURL
+        });
+
+        alert("Google Registration Successful!");
         window.location.href = "view-recipes.html";
     } catch (error) {
         alert(error.message);
@@ -111,4 +107,3 @@ window.onload = async () => {
         recipeList.appendChild(li);
     });
 };
-
